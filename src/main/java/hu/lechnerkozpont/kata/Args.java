@@ -15,7 +15,7 @@ public class Args {
     public void setParameters(String[] parameters) {
         clearParameters();
         check(parameters);
-        collectUsefullParameters(parameters);
+        collectUsefulParameters(parameters);
         parseAllParameters();
     }
 
@@ -37,7 +37,7 @@ public class Args {
             throw new IllegalParametersException();
     }
 
-    private void collectUsefullParameters(String[] parameters) {
+    private void collectUsefulParameters(String[] parameters) {
         for (String parameter: parameters) {
             if(StringUtils.isNotEmpty(parameter)){
                 this.parameters.add(parameter);
