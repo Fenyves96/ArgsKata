@@ -21,6 +21,7 @@ public class Args {
 
     private void clearParameters() {
         parameters = new ArrayList<>();
+        setFileName("");
     }
 
     public String getFileName() {
@@ -50,8 +51,9 @@ public class Args {
     }
 
     private void setFileNameByParameters() {
-        if(parameters.size() > 0) {
-            setFileName(parameters.get(0));
+        Iterator<String> it = parameters.iterator();
+        while (it.hasNext() && fileName.equals("")){
+            setFileName(it.next());
         }
     }
 
