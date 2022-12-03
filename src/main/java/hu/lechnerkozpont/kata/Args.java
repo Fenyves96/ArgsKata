@@ -8,20 +8,23 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Args {
-    String fileName = "";
-    boolean logging = false;
+    private static final String DEFAULT_FILE_NAME = "";
+    private static final boolean DEFAULT_LOGGING = false;
+    String fileName = DEFAULT_FILE_NAME;
+    boolean logging = DEFAULT_LOGGING;
     List<String> parameters = new ArrayList<>();
 
     public void setParameters(String[] parameters) {
-        clearParameters();
+        resetDefaults();
         check(parameters);
         collectUsefulParameters(parameters);
         parseAllParameters();
     }
 
-    private void clearParameters() {
+    private void resetDefaults() {
         parameters = new ArrayList<>();
-        setFileName("");
+        setFileName(DEFAULT_FILE_NAME);
+        logging = DEFAULT_LOGGING;
     }
 
     public String getFileName() {
@@ -58,9 +61,13 @@ public class Args {
     }
 
     private void setLoggingByParameters(){
-        if(parameters.stream().anyMatch(p -> p.equals("-l"))){
-            parameters.remove("-l");
-            setLoggingTrue();
+        Iterator <String> it = parameters.iterator();
+        while (it.hasNext() && !logging){
+            String parameter = it.next();
+            if("-l".equals(parameter)) {
+                setLoggingTrue();
+                parameters.remove(parameter);
+            }
         }
     }
 
