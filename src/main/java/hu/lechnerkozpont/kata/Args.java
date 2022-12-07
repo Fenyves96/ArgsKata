@@ -52,12 +52,12 @@ public class Args {
             if (isLoggingParameterNotSetted(parameter)) {
                 setLoggingTrue();
             }
-            else if(isFileNameNotSetted(fileName))
+            else if(isFileNameNotSetted())
                 setFileName(parameter);
         }
     }
 
-    private boolean isFileNameNotSetted(String fileName) {
+    private boolean isFileNameNotSetted() {
         return fileName.equals(DEFAULT_FILE_NAME);
     }
 
