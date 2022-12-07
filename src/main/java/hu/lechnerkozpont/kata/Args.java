@@ -4,7 +4,6 @@ import hu.lechnerkozpont.kata.exception.IllegalParametersException;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class Args {
@@ -49,26 +48,21 @@ public class Args {
     }
 
     private void parseAllParameters() {
-        setLoggingByParameters();
-        setFileNameByParameters();
-    }
-
-    private void setFileNameByParameters() {
-        Iterator<String> it = parameters.iterator();
-        while (it.hasNext() && fileName.equals("")){
-            setFileName(it.next());
-        }
-    }
-
-    private void setLoggingByParameters(){
-        Iterator <String> it = parameters.iterator();
-        while (it.hasNext() && !logging){
-            String parameter = it.next();
-            if("-l".equals(parameter)) {
+        for (String parameter : parameters) {
+            if (isLoggingParameterNotSetted(parameter)) {
                 setLoggingTrue();
-                parameters.remove(parameter);
             }
+            else if(isFileNameNotSetted(fileName))
+                setFileName(parameter);
         }
+    }
+
+    private boolean isFileNameNotSetted(String fileName) {
+        return fileName.equals(DEFAULT_FILE_NAME);
+    }
+
+    private boolean isLoggingParameterNotSetted(String parameter) {
+        return parameter.equals("-l") && !logging;
     }
 
     private void setLoggingTrue(){
