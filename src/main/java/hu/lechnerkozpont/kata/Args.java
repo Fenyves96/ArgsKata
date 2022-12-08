@@ -49,19 +49,19 @@ public class Args {
 
     private void parseAllParameters() {
         for (String parameter : parameters) {
-            if (isLoggingParameterNotSetted(parameter)) {
-                setLoggingTrue();
-            }
-            else if(isFileNameNotSetted())
-                setFileName(parameter);
+            parseOneParameter(parameter);
         }
     }
 
-    private boolean isFileNameNotSetted() {
-        return fileName.equals(DEFAULT_FILE_NAME);
+    private void parseOneParameter(String parameter) {
+        if (isLoggingParameter(parameter)) {
+            setLoggingTrue();
+        }
+        else
+            setFileName(parameter);
     }
 
-    private boolean isLoggingParameterNotSetted(String parameter) {
+    private boolean isLoggingParameter(String parameter) {
         return parameter.equals("-l") && !logging;
     }
 
