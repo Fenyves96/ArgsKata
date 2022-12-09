@@ -1,3 +1,5 @@
+import exception.InvalidPortNumberException;
+import exception.PortValueMissingException;
 import exception.UnknownParameterException;
 import hu.lechnerkozpont.kata.Args;
 import hu.lechnerkozpont.kata.exception.IllegalParametersException;
@@ -87,6 +89,27 @@ public class ArgsTests {
         assertAllParameters("filename.txt",
                 new String[]{"-l", "filename.txt"});
         assertAllParameters("-l",new String[]{"-l","-l"});
+    }
+
+    @Test
+    public void testGetPortIfPortNotGiven(){
+        args.setParameters(new String []{""});
+        assertEquals(8080, args.getPort());
+    }
+
+    @Test(expected = PortValueMissingException.class)
+    public void testGetPortIfFlagGivenButParameter(){
+        args.setParameters(new String []{"-p"});
+    }
+
+    @Test(expected = PortValueMissingException.class)
+    public void testGetPortIfFlagGivenButParameterIsInvalid(){
+        args.setParameters(new String []{"-p", "filename.txt"});
+    }
+
+    @Test(expected = InvalidPortNumberException.class)
+    public void testGetPortIfPortNumberIsInvalidThenThrows(){
+        args.setParameters(new String []{"-p", "-1"});
     }
 
     @Test
