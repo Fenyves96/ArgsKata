@@ -1,3 +1,4 @@
+import exception.UnknownParameterException;
 import hu.lechnerkozpont.kata.Args;
 import hu.lechnerkozpont.kata.exception.IllegalParametersException;
 import org.junit.Before;
@@ -11,7 +12,7 @@ public class ArgsTests {
     private Args args;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         args = new Args();
     }
 
@@ -88,6 +89,14 @@ public class ArgsTests {
         assertAllParameters("-l",new String[]{"-l","-l"});
     }
 
+    @Test
+    public void testTooManyParameter(){
+        UnknownParameterException ex = assertThrows(UnknownParameterException.class, () ->
+                assertAllParameters("-l",new String[]{"-l","fileName.txt","-l"}));
+        assertEquals("-l", ex.getParameter());
+        assertEquals(3, ex.getPosition());
+    }
+
     private void assertAllParameters(String expectedFileName, String[] parameters) {
         assertLoggingParameterTrue(parameters);
         assertFileParameter(expectedFileName, parameters);
@@ -95,12 +104,12 @@ public class ArgsTests {
 
     private void assertLoggingParameterFalse(String[] parameters) {
         args.setParameters(parameters);
-        assertFalse(args.getLogging());
+        assertFalse(args.isLogging());
     }
 
     private void assertLoggingParameterTrue(String[] parameters) {
         args.setParameters(parameters);
-        assertTrue(args.getLogging());
+        assertTrue(args.isLogging());
     }
 
     private void assertFileParameter(String fileName, String[] parameters) {
