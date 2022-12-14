@@ -107,9 +107,10 @@ public class ArgsTests {
         args.setParameters(new String []{"-p", "filename.txt"});
     }
 
-    @Test(expected = InvalidPortNumberException.class)
+    @Test()
     public void testGetPortIfPortNumberIsInvalidThenThrows(){
-        args.setParameters(new String []{"-p", "-1"});
+       assertThrows(InvalidPortNumberException.class, () -> args.setParameters(new String []{"-p", "-1"}));
+       assertThrows(InvalidPortNumberException.class, () -> args.setParameters(new String []{"-p", "88.7"}));
     }
 
     @Test
