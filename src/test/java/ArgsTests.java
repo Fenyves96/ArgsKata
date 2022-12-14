@@ -116,14 +116,18 @@ public class ArgsTests {
 
     @Test
     public void testGetPortNumberWithValidNumbers(){
-        assertPortNumber(0);
-        assertPortNumber(9090);
-        assertPortNumber(65536);
+        assertPortNumber(0, new String []{"-p", "0"});
+        assertPortNumber(9090, new String []{"-p", "9090"});
+        assertPortNumber(65536, new String []{"-p", "65536"});
+
+
+        assertPortNumber(1234, new String []{"-p", "1234", "filename.txt"});
+        assertPortNumber(1234, new String []{"-p", "1234", "filename.txt", "-l"});
     }
 
-    private void assertPortNumber(int validPortNumber) {
-        args.setParameters(new String []{"-p", Integer.toString(validPortNumber)});
-        assertEquals(validPortNumber, args.getPort());
+    private void assertPortNumber(int portNumber, String [] parameters) {
+        args.setParameters(parameters);
+        assertEquals(portNumber, args.getPort());
     }
 
     @Test
