@@ -6,10 +6,7 @@ import exception.UnknownParameterException;
 import hu.lechnerkozpont.kata.exception.IllegalParametersException;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Args {
     private static final String PORT_FLAG = "-p";
@@ -61,11 +58,13 @@ public class Args {
     }
 
     private void parseAllParameters() {
-        int position = 0;
-        for (String parameter : parameters) {
-            position++;
-            ifUknownParameterThenThrows(position, parameter);
+        ListIterator<String> it = parameters.listIterator();
+        while (it.hasNext()){
+            String parameter = it.next();
+            ifUknownParameterThenThrows(it.nextIndex(), parameter);
             parseOneParameter(parameter);
+            if(isPortParameter(parameter))
+                it.next();
         }
     }
 

@@ -123,6 +123,7 @@ public class ArgsTests {
 
         assertPortNumber(1234, new String []{"-p", "1234", "filename.txt"});
         assertPortNumber(1234, new String []{"-p", "1234", "filename.txt", "-l"});
+        assertPortNumber(9876, new String []{"-l", "-p", "9876", "filename.txt"});
     }
 
     private void assertPortNumber(int portNumber, String [] parameters) {
