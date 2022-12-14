@@ -9,8 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static org.apache.commons.lang.math.NumberUtils.isNumber;
+import java.util.Objects;
 
 public class Args {
     private static final String PORT_FLAG = "-p";
@@ -19,6 +18,8 @@ public class Args {
     private static final String DEFAULT_FILE_NAME = "";
     private static final boolean DEFAULT_NO_LOGGING = false;
     private static final int DEFAULT_PORT_NUMBER = 8080;
+    public static final int MIN_PORT_NUMBER = 0;
+    public static final int MAX_PORT_NUMBER = 65536;
 
     private String fileName = DEFAULT_FILE_NAME;
     private boolean isLogging = DEFAULT_NO_LOGGING;
@@ -91,19 +92,42 @@ public class Args {
     }
 
     private void setPort() {
-        validateParameterAfterPortFlag();
+        String nextParameter = getParameterAfterPortFlag();
+        validateParameterAfterPortFlag(nextParameter);
+        port = parseInt(nextParameter);
+    }
+
+    private int parseInt(String nextParameter) {
+        return Integer.parseInt(Objects.requireNonNull(nextParameter));
     }
 
     private void invalidPortNumberError() {
         throw new InvalidPortNumberException();
     }
 
-    private void validateParameterAfterPortFlag(){
-        String nextParameter = getParameterAfterPortFlag();
-        if(!isNumber(nextParameter))
+    private void validateParameterAfterPortFlag(String parameter){
+        if(!isInteger(parameter))
             portNumberMissingError();
-        else
+        validatePortNumber(parameter);
+    }
+
+    private void validatePortNumber(String nextParameter) {
+        int inputPortNumber = Integer.parseInt(nextParameter);
+        if(!isPortNumberBetweenRange(inputPortNumber))
             invalidPortNumberError();
+    }
+
+    private boolean isInteger(String inputString) {
+            try {
+                Integer.parseInt(inputString);
+                return true;
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
+    }
+
+    private boolean isPortNumberBetweenRange(int inputPortNumber) {
+        return inputPortNumber >= MIN_PORT_NUMBER && inputPortNumber <= MAX_PORT_NUMBER;
     }
 
     private String getParameterAfterPortFlag() {

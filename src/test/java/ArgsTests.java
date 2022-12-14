@@ -102,15 +102,28 @@ public class ArgsTests {
         args.setParameters(new String []{"-p"});
     }
 
-    @Test(expected = PortValueMissingException.class)
-    public void testGetPortIfFlagGivenButParameterIsInvalid(){
-        args.setParameters(new String []{"-p", "filename.txt"});
+    @Test()
+    public void testGetPortIfFlagGivenButParameterIsNotInteger(){
+        assertThrows(PortValueMissingException.class, () -> args.setParameters(new String []{"-p", "filename.txt"}));
+        assertThrows(PortValueMissingException.class, () -> args.setParameters(new String []{"-p", "88.7"}));
     }
 
     @Test()
     public void testGetPortIfPortNumberIsInvalidThenThrows(){
        assertThrows(InvalidPortNumberException.class, () -> args.setParameters(new String []{"-p", "-1"}));
-       assertThrows(InvalidPortNumberException.class, () -> args.setParameters(new String []{"-p", "88.7"}));
+       assertThrows(InvalidPortNumberException.class, () -> args.setParameters(new String []{"-p", "65537"}));
+    }
+
+    @Test
+    public void testGetPortNumberWithValidNumbers(){
+        assertPortNumber(0);
+        assertPortNumber(9090);
+        assertPortNumber(65536);
+    }
+
+    private void assertPortNumber(int validPortNumber) {
+        args.setParameters(new String []{"-p", Integer.toString(validPortNumber)});
+        assertEquals(validPortNumber, args.getPort());
     }
 
     @Test
