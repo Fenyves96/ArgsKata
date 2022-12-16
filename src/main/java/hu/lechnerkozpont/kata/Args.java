@@ -74,10 +74,6 @@ public class Args {
         }
     }
 
-    private boolean isPortParameterNotSetYet() {
-        return port == null;
-    }
-
     private void ifUknownParameterThenThrows(int position, String parameter) {
         if(!isParameterUseAble(parameter))
             unknownParameterError(position, parameter);
@@ -101,6 +97,10 @@ public class Args {
 
     private boolean isFileNameNotYetSet() {
         return Objects.equals(fileName, null);
+    }
+
+    private boolean isPortParameterNotSetYet() {
+        return port == null;
     }
 
     private void parseOneParameter(String parameter) {
