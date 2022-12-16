@@ -18,9 +18,9 @@ public class Args {
     public static final int MIN_PORT_NUMBER = 0;
     public static final int MAX_PORT_NUMBER = 65536;
 
-    private String fileName = DEFAULT_FILE_NAME;
-    private boolean isLogging = DEFAULT_NO_LOGGING;
-    private int port = DEFAULT_PORT_NUMBER;
+    private String fileName = null;
+    private Boolean isLogging = null;
+    private Integer port = null;
     List<String> parameters = new ArrayList<>();
 
 
@@ -33,17 +33,23 @@ public class Args {
 
     private void resetDefaults() {
         parameters = new ArrayList<>();
-        setFileName(DEFAULT_FILE_NAME);
-        isLogging = DEFAULT_NO_LOGGING;
+        setFileName(null);
+        isLogging = null;
+        port = null;
     }
 
     public String getFileName() {
-        return fileName;
+        return fileName != null ? fileName : DEFAULT_FILE_NAME;
     }
 
     public boolean isLogging() {
-        return isLogging;
+        return isLogging != null ? isLogging : DEFAULT_NO_LOGGING;
     }
+
+    public int getPort() {
+        return port != null ? port : DEFAULT_PORT_NUMBER;
+    }
+
 
     private void check(String[] parameters) {
         if(parameters == null)
@@ -69,16 +75,20 @@ public class Args {
     }
 
     private void ifUknownParameterThenThrows(int position, String parameter) {
-        if(isAllParameterSetted())
+        if(!isParameterUseAble(parameter))
             unknownParameterError(position, parameter);
     }
 
-    private boolean isAllParameterSetted() {
-        return isLogging && isFileNameNotDefault();
+    private boolean isParameterUseAble(String parameter) {
+        return isParameterUseableForLogging(parameter) || isParameterUseableForPort(parameter) || isFileNameNotYetSet();
     }
 
-    private boolean isFileNameNotDefault() {
-        return  !fileName.equals(DEFAULT_FILE_NAME);
+    private boolean isParameterUseableForPort(String parameter) {
+        return isPortParameter(parameter) && port == null;
+    }
+
+    private boolean isParameterUseableForLogging(String parameter) {
+        return isLoggingParameter(parameter) && isLogging == null;
     }
 
     private void parseOneParameter(String parameter) {
@@ -153,11 +163,11 @@ public class Args {
     }
 
     private boolean isFileNameNotYetSet() {
-        return fileName.equals(DEFAULT_FILE_NAME);
+        return Objects.equals(fileName, null);
     }
 
     private boolean isLoggingParameter(String parameter) {
-        return parameter.equals(LOGGING_FLAG) && !isLogging;
+        return parameter.equals(LOGGING_FLAG) && !Optional.ofNullable(isLogging).orElse(false);
     }
 
     private void setLoggingTrue(){
@@ -166,9 +176,5 @@ public class Args {
 
     private void setFileName(String fileName) {
         this.fileName = fileName;
-    }
-
-    public int getPort() {
-        return port;
     }
 }

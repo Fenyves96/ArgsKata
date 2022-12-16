@@ -124,6 +124,7 @@ public class ArgsTests {
         assertPortNumber(1234, new String []{"-p", "1234", "filename.txt"});
         assertPortNumber(1234, new String []{"-p", "1234", "filename.txt", "-l"});
         assertPortNumber(9876, new String []{"-l", "-p", "9876", "filename.txt"});
+        assertPortNumber(9876, new String []{"filename.txt","-l", "-p", "9876"});
     }
 
     private void assertPortNumber(int portNumber, String [] parameters) {
@@ -134,7 +135,7 @@ public class ArgsTests {
     @Test
     public void testTooManyParameter(){
         UnknownParameterException ex = assertThrows(UnknownParameterException.class, () ->
-                assertAllParameters("-l",new String[]{"-l","fileName.txt","-l"}));
+                assertAllParameters("fileName.txt",new String[]{"-l","fileName.txt","-l"}));
         assertEquals("-l", ex.getParameter());
         assertEquals(3, ex.getPosition());
     }
