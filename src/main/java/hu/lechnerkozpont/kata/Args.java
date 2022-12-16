@@ -68,10 +68,14 @@ public class Args {
         while (it.hasNext()){
             String parameter = it.next();
             ifUknownParameterThenThrows(it.nextIndex(), parameter);
-            parseOneParameter(parameter);
-            if(isPortParameter(parameter))
+            if(isPortParameter(parameter) && isPortParameterNotSetYet() && it.hasNext())
                 it.next();
+            parseOneParameter(parameter);
         }
+    }
+
+    private boolean isPortParameterNotSetYet() {
+        return port == null;
     }
 
     private void ifUknownParameterThenThrows(int position, String parameter) {
@@ -91,10 +95,14 @@ public class Args {
         return isLoggingParameter(parameter) && isLogging == null;
     }
 
+    private boolean isFileNameNotYetSet() {
+        return Objects.equals(fileName, null);
+    }
+
     private void parseOneParameter(String parameter) {
-        if (isLoggingParameter(parameter))
+        if (isParameterUseableForLogging(parameter))
             setLoggingTrue();
-        else if (isPortParameter(parameter))
+        else if (isParameterUseableForPort(parameter))
             setPort();
         else if (isFileNameNotYetSet())
             setFileName(parameter);
@@ -162,12 +170,8 @@ public class Args {
         throw new UnknownParameterException(position, parameter);
     }
 
-    private boolean isFileNameNotYetSet() {
-        return Objects.equals(fileName, null);
-    }
-
     private boolean isLoggingParameter(String parameter) {
-        return parameter.equals(LOGGING_FLAG) && !Optional.ofNullable(isLogging).orElse(false);
+        return parameter.equals(LOGGING_FLAG);
     }
 
     private void setLoggingTrue(){

@@ -136,11 +136,12 @@ public class ArgsTests {
 
     @Test
     public void testTooManyParameter(){
-        assertUknownParameterException("-l", 3, new String[] {"-l", "fileName.txt", "-l"});
-        assertUknownParameterException("8080", 5, new String[] {"-l", "fileName.txt", "-p", "8080", "8080"});
+        assertUknownParameter("-l", 3, new String[] {"-l", "fileName.txt", "-l"});
+        assertUknownParameter("8080", 5, new String[] {"-l", "fileName.txt", "-p", "8080", "8080"});
+        assertUknownParameter("-p", 4, new String[] {"-p", "8080", "-p", "-p"});
     }
 
-    private void assertUknownParameterException(String expectedParameter, int expectedPosition, String[] parameters) {
+    private void assertUknownParameter(String expectedParameter, int expectedPosition, String[] parameters) {
         UnknownParameterException ex2 = assertThrows(UnknownParameterException.class, () ->
                 assertAllParameters("fileName.txt",8080,parameters));
         assertEquals(expectedParameter, ex2.getParameter());
