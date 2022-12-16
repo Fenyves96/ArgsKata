@@ -136,10 +136,15 @@ public class ArgsTests {
 
     @Test
     public void testTooManyParameter(){
-        UnknownParameterException ex = assertThrows(UnknownParameterException.class, () ->
-                assertAllParameters("fileName.txt",8080,new String[]{"-l","fileName.txt","-l"}));
-        assertEquals("-l", ex.getParameter());
-        assertEquals(3, ex.getPosition());
+        assertUknownParameterException("-l", 3, new String[] {"-l", "fileName.txt", "-l"});
+        assertUknownParameterException("8080", 5, new String[] {"-l", "fileName.txt", "-p", "8080", "8080"});
+    }
+
+    private void assertUknownParameterException(String expectedParameter, int expectedPosition, String[] parameters) {
+        UnknownParameterException ex2 = assertThrows(UnknownParameterException.class, () ->
+                assertAllParameters("fileName.txt",8080,parameters));
+        assertEquals(expectedParameter, ex2.getParameter());
+        assertEquals(expectedPosition, ex2.getPosition());
     }
 
     private void assertAllParameters(String expectedFileName,int expectedPortNumber, String[] parameters) {
