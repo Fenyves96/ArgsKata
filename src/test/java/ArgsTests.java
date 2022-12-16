@@ -1,3 +1,5 @@
+import exception.InvalidPortNumberException;
+import exception.PortValueMissingException;
 import exception.UnknownParameterException;
 import hu.lechnerkozpont.kata.Args;
 import hu.lechnerkozpont.kata.exception.IllegalParametersException;
@@ -71,6 +73,8 @@ public class ArgsTests {
     public void testGetLoggingIfFlagNotGivenThenFalse(){
         assertLoggingParameterFalse(new String[]{""});
         assertLoggingParameterFalse(new String [] {});
+        assertLoggingParameterFalse(new String [] {"filname.txt"});
+        assertLoggingParameterFalse(new String[] {"-p", "9090", "filename.txt"});
     }
 
     @Test
@@ -82,24 +86,75 @@ public class ArgsTests {
 
     @Test
     public void testGetLoggingIfFlagGiven(){
-        assertAllParameters("filename.txt",
+        assertAllParameters("filename.txt", 8080,
                 new String[]{"filename.txt","-l"});
-        assertAllParameters("filename.txt",
+        assertAllParameters("filename.txt", 8080,
                 new String[]{"-l", "filename.txt"});
-        assertAllParameters("-l",new String[]{"-l","-l"});
+        assertAllParameters("-l", 8080, new String[]{"-l", "-l"});
+    }
+
+    @Test
+    public void testGetPortIfPortNotGiven(){
+        args.setParameters(new String []{""});
+        assertEquals(8080, args.getPort());
+    }
+
+    @Test(expected = PortValueMissingException.class)
+    public void testGetPortIfFlagGivenButParameter(){
+        args.setParameters(new String []{"-p"});
+    }
+
+    @Test()
+    public void testGetPortIfFlagGivenButParameterIsNotInteger(){
+        assertThrows(PortValueMissingException.class, () -> args.setParameters(new String []{"-p", "filename.txt"}));
+        assertThrows(PortValueMissingException.class, () -> args.setParameters(new String []{"-p", "88.7"}));
+    }
+
+    @Test()
+    public void testGetPortIfPortNumberIsInvalidThenThrows(){
+       assertThrows(InvalidPortNumberException.class, () -> args.setParameters(new String []{"-p", "-1"}));
+       assertThrows(InvalidPortNumberException.class, () -> args.setParameters(new String []{"-p", "65537"}));
+    }
+
+    @Test
+    public void testGetPortNumberWithValidNumbers(){
+        assertPortNumber(0, new String []{"-p", "0"});
+        assertPortNumber(9090, new String []{"-p", "9090"});
+        assertPortNumber(65536, new String []{"-p", "65536"});
+
+
+        assertPortNumber(1234, new String []{"-p", "1234", "filename.txt"});
+        assertPortNumber(1234, new String []{"-p", "1234", "filename.txt", "-l"});
+        assertAllParameters("filename.txt", 9876, new String []
+                {"-l", "-p", "9876", "filename.txt"});
+    }
+
+    private void assertPortNumber(int portNumber, String [] parameters) {
+        args.setParameters(parameters);
+        assertEquals(portNumber, args.getPort());
     }
 
     @Test
     public void testTooManyParameter(){
-        UnknownParameterException ex = assertThrows(UnknownParameterException.class, () ->
-                assertAllParameters("-l",new String[]{"-l","fileName.txt","-l"}));
-        assertEquals("-l", ex.getParameter());
-        assertEquals(3, ex.getPosition());
+        assertUknownParameter("-l", 3, new String[]{"-l", "fileName.txt", "-l"});
+        assertUknownParameter("8080", 5, new String[]
+                {"-l", "fileName.txt", "-p", "8080", "8080"});
+        assertUknownParameter("-p", 4, new String[]{"-p", "8080", "-p", "-p"});
+        assertUknownParameter("filename.txt", 4, new String[]
+                {"-p", "8080", "filename.txt", "filename.txt"});
     }
 
-    private void assertAllParameters(String expectedFileName, String[] parameters) {
+    private void assertUknownParameter(String expectedParameter, int expectedPosition, String[] parameters) {
+        UnknownParameterException ex2 = assertThrows(UnknownParameterException.class, () ->
+                assertAllParameters("fileName.txt",8080,parameters));
+        assertEquals(expectedParameter, ex2.getParameter());
+        assertEquals(expectedPosition, ex2.getPosition());
+    }
+
+    private void assertAllParameters(String expectedFileName,int expectedPortNumber, String[] parameters) {
         assertLoggingParameterTrue(parameters);
         assertFileParameter(expectedFileName, parameters);
+        assertPortNumber(expectedPortNumber, parameters);
     }
 
     private void assertLoggingParameterFalse(String[] parameters) {

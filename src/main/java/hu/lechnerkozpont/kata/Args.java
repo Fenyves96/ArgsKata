@@ -1,18 +1,28 @@
 package hu.lechnerkozpont.kata;
 
+import exception.InvalidPortNumberException;
+import exception.PortValueMissingException;
 import exception.UnknownParameterException;
 import hu.lechnerkozpont.kata.exception.IllegalParametersException;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Args {
+    private static final String PORT_FLAG = "-p";
+    private static final String LOGGING_FLAG = "-l";
+
     private static final String DEFAULT_FILE_NAME = "";
     private static final boolean DEFAULT_NO_LOGGING = false;
-    String fileName = DEFAULT_FILE_NAME;
-    boolean isLogging = DEFAULT_NO_LOGGING;
+    private static final int DEFAULT_PORT_NUMBER = 8080;
+    public static final int MIN_PORT_NUMBER = 0;
+    public static final int MAX_PORT_NUMBER = 65536;
+
+    private String fileName = null;
+    private Boolean isLogging = null;
+    private Integer port = null;
     List<String> parameters = new ArrayList<>();
+
 
     public void setParameters(String[] parameters) {
         resetDefaults();
@@ -23,17 +33,23 @@ public class Args {
 
     private void resetDefaults() {
         parameters = new ArrayList<>();
-        setFileName(DEFAULT_FILE_NAME);
-        isLogging = DEFAULT_NO_LOGGING;
+        setFileName(null);
+        isLogging = null;
+        port = null;
     }
 
     public String getFileName() {
-        return fileName;
+        return fileName != null ? fileName : DEFAULT_FILE_NAME;
     }
 
     public boolean isLogging() {
-        return isLogging;
+        return isLogging != null ? isLogging : DEFAULT_NO_LOGGING;
     }
+
+    public int getPort() {
+        return port != null ? port : DEFAULT_PORT_NUMBER;
+    }
+
 
     private void check(String[] parameters) {
         if(parameters == null)
@@ -48,44 +64,114 @@ public class Args {
     }
 
     private void parseAllParameters() {
-        int position = 0;
-        for (String parameter : parameters) {
-            position++;
-            ifUknownParameterThenThrows(position, parameter);
+        ListIterator<String> it = parameters.listIterator();
+        while (it.hasNext()){
+            String parameter = it.next();
+            ifUknownParameterThenThrows(it.nextIndex(), parameter);
+            if(isPortParameter(parameter) && isPortParameterNotSetYet() && it.hasNext())
+                it.next();
             parseOneParameter(parameter);
         }
     }
 
+    private boolean isPortParameterNotSetYet() {
+        return port == null;
+    }
+
     private void ifUknownParameterThenThrows(int position, String parameter) {
-        if(isAllParameterSetted())
+        if(!isParameterUseAble(parameter))
             unknownParameterError(position, parameter);
     }
 
-    private boolean isAllParameterSetted() {
-        return isLogging && isFileNameNotDefault();
+    private boolean isParameterUseAble(String parameter) {
+        return isParameterUseableForLogging(parameter) || isParameterUseableForPort(parameter) || isFileNameNotYetSet();
     }
 
-    private boolean isFileNameNotDefault() {
-        return !isFileNameDefault();
+    private boolean isParameterUseableForPort(String parameter) {
+        return isPortParameter(parameter) && port == null;
+    }
+
+    private boolean isParameterUseableForLogging(String parameter) {
+        return isLoggingParameter(parameter) && isLogging == null;
+    }
+
+    private boolean isFileNameNotYetSet() {
+        return Objects.equals(fileName, null);
     }
 
     private void parseOneParameter(String parameter) {
-        if (isLoggingParameter(parameter))
+        if (isParameterUseableForLogging(parameter))
             setLoggingTrue();
-        else if (isFileNameDefault())
+        else if (isParameterUseableForPort(parameter))
+            setPort();
+        else if (isFileNameNotYetSet())
             setFileName(parameter);
+    }
+
+    private void setPort() {
+        String nextParameter = getParameterAfterPortFlag();
+        validateParameterAfterPortFlag(nextParameter);
+        port = parseInt(nextParameter);
+    }
+
+    private int parseInt(String nextParameter) {
+        return Integer.parseInt(Objects.requireNonNull(nextParameter));
+    }
+
+    private void invalidPortNumberError() {
+        throw new InvalidPortNumberException();
+    }
+
+    private void validateParameterAfterPortFlag(String parameter){
+        if(!isInteger(parameter))
+            portNumberMissingError();
+        validatePortNumber(parameter);
+    }
+
+    private void validatePortNumber(String nextParameter) {
+        int inputPortNumber = Integer.parseInt(nextParameter);
+        if(!isPortNumberBetweenRange(inputPortNumber))
+            invalidPortNumberError();
+    }
+
+    private boolean isInteger(String inputString) {
+            try {
+                Integer.parseInt(inputString);
+                return true;
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
+    }
+
+    private boolean isPortNumberBetweenRange(int inputPortNumber) {
+        return inputPortNumber >= MIN_PORT_NUMBER && inputPortNumber <= MAX_PORT_NUMBER;
+    }
+
+    private String getParameterAfterPortFlag() {
+        Iterator<String> it = parameters.iterator();
+        while (it.hasNext()){
+            String nextParameter = it.next();
+            if(nextParameter.equals(PORT_FLAG) && it.hasNext()){
+                return it.next();
+            }
+        }
+        return null;
+    }
+
+    private void portNumberMissingError() {
+        throw new PortValueMissingException();
+    }
+
+    private boolean isPortParameter(String parameter) {
+        return PORT_FLAG.equals(parameter);
     }
 
     private void unknownParameterError(int position, String parameter) {
         throw new UnknownParameterException(position, parameter);
     }
 
-    private boolean isFileNameDefault() {
-        return fileName.equals(DEFAULT_FILE_NAME);
-    }
-
     private boolean isLoggingParameter(String parameter) {
-        return parameter.equals("-l") && !isLogging;
+        return parameter.equals(LOGGING_FLAG);
     }
 
     private void setLoggingTrue(){
