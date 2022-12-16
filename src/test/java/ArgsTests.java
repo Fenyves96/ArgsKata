@@ -73,6 +73,8 @@ public class ArgsTests {
     public void testGetLoggingIfFlagNotGivenThenFalse(){
         assertLoggingParameterFalse(new String[]{""});
         assertLoggingParameterFalse(new String [] {});
+        assertLoggingParameterFalse(new String [] {"filname.txt"});
+        assertLoggingParameterFalse(new String[] {"-p", "9090", "filename.txt"});
     }
 
     @Test
