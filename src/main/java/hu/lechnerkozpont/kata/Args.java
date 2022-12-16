@@ -68,7 +68,7 @@ public class Args {
         while (it.hasNext()){
             String parameter = it.next();
             ifUknownParameterThenThrows(it.nextIndex(), parameter);
-            if(isPortParameter(parameter) && isPortParameterNotSetYet() && it.hasNext())
+            if (isParameterUseableForPort(parameter) && it.hasNext())
                 it.next();
             parseOneParameter(parameter);
         }
@@ -88,11 +88,15 @@ public class Args {
     }
 
     private boolean isParameterUseableForPort(String parameter) {
-        return isPortParameter(parameter) && port == null;
+        return isPortParameter(parameter) && isPortParameterNotSetYet();
     }
 
     private boolean isParameterUseableForLogging(String parameter) {
-        return isLoggingParameter(parameter) && isLogging == null;
+        return isLoggingParameter(parameter) && isLogginNotSetYet();
+    }
+
+    private boolean isLogginNotSetYet() {
+        return isLogging == null;
     }
 
     private boolean isFileNameNotYetSet() {
