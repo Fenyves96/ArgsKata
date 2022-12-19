@@ -22,6 +22,8 @@ public class Args {
     private Boolean isLogging = null;
     private Integer port = null;
     List<String> parameters = new ArrayList<>();
+    private String actualParameter;
+    ListIterator<String> parametersIterator;
 
 
     public void setParameters(String[] parameters) {
@@ -64,27 +66,23 @@ public class Args {
     }
 
     private void parseAllParameters() {
-        ListIterator<String> it = parameters.listIterator();
-        while (it.hasNext()){
-            String parameter = it.next();
-            ifUknownParameterThenThrows(it.nextIndex(), parameter);
-            if (isParameterUseableForPort(parameter) && it.hasNext())
-                it.next();
-            parseOneParameter(parameter);
+        parametersIterator = parameters.listIterator();
+        while (parametersIterator.hasNext()){
+            parseActualParameter();
         }
     }
 
-    private void ifUknownParameterThenThrows(int position, String parameter) {
-        if(!isParameterUseAble(parameter))
-            unknownParameterError(position, parameter);
+    private void ifUknownParameterThenThrows() {
+        if(!isParameterUseAble())
+            unknownParameterError();
     }
 
-    private boolean isParameterUseAble(String parameter) {
-        return isParameterUseableForLogging(parameter) || isParameterUseableForPort(parameter) || isFileNameNotYetSet();
+    private boolean isParameterUseAble() {
+        return isParameterUseableForLogging(actualParameter) || isParameterUseableForPort() || isFileNameNotYetSet();
     }
 
-    private boolean isParameterUseableForPort(String parameter) {
-        return isPortParameter(parameter) && isPortParameterNotSetYet();
+    private boolean isParameterUseableForPort() {
+        return isPortParameter(actualParameter) && isPortParameterNotSetYet();
     }
 
     private boolean isParameterUseableForLogging(String parameter) {
@@ -103,13 +101,17 @@ public class Args {
         return port == null;
     }
 
-    private void parseOneParameter(String parameter) {
-        if (isParameterUseableForLogging(parameter))
+    private void parseActualParameter() {
+        actualParameter = parametersIterator.next();
+        ifUknownParameterThenThrows();
+        if (isParameterUseableForPort() && parametersIterator.hasNext())
+            parametersIterator.next();
+        if (isParameterUseableForLogging(actualParameter))
             setLoggingTrue();
-        else if (isParameterUseableForPort(parameter))
+        else if (isParameterUseableForPort())
             setPort();
         else if (isFileNameNotYetSet())
-            setFileName(parameter);
+            setFileName(actualParameter);
     }
 
     private void setPort() {
@@ -170,8 +172,8 @@ public class Args {
         return PORT_FLAG.equals(parameter);
     }
 
-    private void unknownParameterError(int position, String parameter) {
-        throw new UnknownParameterException(position, parameter);
+    private void unknownParameterError() {
+        throw new UnknownParameterException(parametersIterator.nextIndex(), actualParameter);
     }
 
     private boolean isLoggingParameter(String parameter) {
