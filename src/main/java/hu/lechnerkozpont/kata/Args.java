@@ -1,8 +1,5 @@
 package hu.lechnerkozpont.kata;
 
-import exception.InvalidPortNumberException;
-import exception.PortValueMissingException;
-import exception.UnknownParameterException;
 import hu.lechnerkozpont.kata.exception.IllegalParametersException;
 import org.apache.commons.lang.StringUtils;
 
@@ -15,8 +12,7 @@ public class Args {
     private static final String DEFAULT_FILE_NAME = "";
     private static final boolean DEFAULT_NO_LOGGING = false;
     private static final int DEFAULT_PORT_NUMBER = 8080;
-    public static final int MIN_PORT_NUMBER = 0;
-    public static final int MAX_PORT_NUMBER = 65536;
+
 
     private String fileName = null;
     private Boolean isLogging = null;
@@ -56,8 +52,9 @@ public class Args {
     private void check(String[] parameters) {
         if(parameters == null)
             throw new IllegalParametersException();
+        ArgsInputCheck argsInputCheck = new ArgsInputCheck();
+        argsInputCheck.check(parameters);
     }
-
     private void collectUsefulParameters(String[] parameters) {
         for (String parameter: parameters) {
             if(StringUtils.isNotEmpty(parameter))
@@ -71,52 +68,30 @@ public class Args {
             parseActualParameter();
         }
     }
-
-    private void ifUknownParameterThenThrows() {
-        if(!isParameterUseAble())
-            unknownParameterError();
-    }
-
-    private boolean isParameterUseAble() {
-        return isParameterUseableForLogging(actualParameter) || isParameterUseableForPort() || isFileNameNotYetSet();
-    }
-
-    private boolean isParameterUseableForPort() {
-        return isPortParameter(actualParameter) && isPortParameterNotSetYet();
-    }
-
-    private boolean isParameterUseableForLogging(String parameter) {
-        return isLoggingParameter(parameter) && isLogginNotSetYet();
-    }
-
-    private boolean isLogginNotSetYet() {
-        return isLogging == null;
-    }
-
     private boolean isFileNameNotYetSet() {
         return Objects.equals(fileName, null);
     }
-
-    private boolean isPortParameterNotSetYet() {
-        return port == null;
-    }
-
-    private void parseActualParameter() {
+        private void parseActualParameter() {
         actualParameter = parametersIterator.next();
-        ifUknownParameterThenThrows();
-        if (isParameterUseableForPort() && parametersIterator.hasNext())
+        if (PORT_FLAG.equals(actualParameter) && parametersIterator.hasNext()) {
             parametersIterator.next();
-        if (isParameterUseableForLogging(actualParameter))
-            setLoggingTrue();
-        else if (isParameterUseableForPort())
             setPort();
+        }
+        else if (isParameterUseableForLogging(actualParameter))
+            setLoggingTrue();
         else if (isFileNameNotYetSet())
             setFileName(actualParameter);
     }
 
+    private boolean isParameterUseableForLogging(String parameter) {
+        return isLoggingParameter(parameter) && isLogging==null;
+    }
+    private boolean isLoggingParameter(String parameter) {
+        return LOGGING_FLAG.equals(parameter);
+    }
+
     private void setPort() {
         String nextParameter = getParameterAfterPortFlag();
-        validateParameterAfterPortFlag(nextParameter);
         port = parseInt(nextParameter);
     }
 
@@ -124,34 +99,15 @@ public class Args {
         return Integer.parseInt(Objects.requireNonNull(nextParameter));
     }
 
-    private void invalidPortNumberError() {
-        throw new InvalidPortNumberException();
-    }
 
-    private void validateParameterAfterPortFlag(String parameter){
-        if(!isInteger(parameter))
-            portNumberMissingError();
-        validatePortNumber(parameter);
-    }
 
-    private void validatePortNumber(String nextParameter) {
-        int inputPortNumber = Integer.parseInt(nextParameter);
-        if(!isPortNumberBetweenRange(inputPortNumber))
-            invalidPortNumberError();
-    }
 
-    private boolean isInteger(String inputString) {
-            try {
-                Integer.parseInt(inputString);
-                return true;
-            } catch (NumberFormatException nfe) {
-                return false;
-            }
-    }
 
-    private boolean isPortNumberBetweenRange(int inputPortNumber) {
-        return inputPortNumber >= MIN_PORT_NUMBER && inputPortNumber <= MAX_PORT_NUMBER;
-    }
+
+
+
+
+
 
     private String getParameterAfterPortFlag() {
         Iterator<String> it = parameters.iterator();
@@ -164,21 +120,13 @@ public class Args {
         return null;
     }
 
-    private void portNumberMissingError() {
-        throw new PortValueMissingException();
-    }
 
-    private boolean isPortParameter(String parameter) {
-        return PORT_FLAG.equals(parameter);
-    }
 
-    private void unknownParameterError() {
-        throw new UnknownParameterException(parametersIterator.nextIndex(), actualParameter);
-    }
 
-    private boolean isLoggingParameter(String parameter) {
-        return parameter.equals(LOGGING_FLAG);
-    }
+
+
+
+
 
     private void setLoggingTrue(){
         this.isLogging = true;
