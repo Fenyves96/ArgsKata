@@ -3,7 +3,7 @@ package hu.lechnerkozpont.kata;
 import exception.InvalidPortNumberException;
 import exception.PortValueMissingException;
 import exception.UnknownParameterException;
-import hu.lechnerkozpont.kata.exception.IllegalParametersException;
+import hu.lechnerkozpont.validation.ArgsValidator;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
@@ -24,6 +24,8 @@ public class Args {
     List<String> parameters = new ArrayList<>();
     private String actualParameter;
     ListIterator<String> parametersIterator;
+
+    ArgsValidator validator = new ArgsValidator();
 
 
     public void setParameters(String[] parameters) {
@@ -54,8 +56,7 @@ public class Args {
 
 
     private void check(String[] parameters) {
-        if(parameters == null)
-            throw new IllegalParametersException();
+        validator.check(parameters);
     }
 
     private void collectUsefulParameters(String[] parameters) {
